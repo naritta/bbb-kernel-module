@@ -7,7 +7,18 @@
 
 #define PROCNAME "driver/gpio"
 
+static long unsigned int * get_base_address(int gpio_number,int operation)
+{
+	long unsigned int p;
+	switch(operation){
+	p = GPIO_BASE[gpio_number>>5]+DATA_IN;
+	return ioremap(p,SZ_8K);
+}
 
+static int get_mask_bit(int gpio_number)
+{
+	return (1<<(gpio_number&0x1f));
+}
 
 static void set_led(int onoff)
 {
@@ -16,9 +27,12 @@ static void set_led(int onoff)
 
 static int user_button(void)
 {
-	// get if button is pushed or not
+	long unsigned int v=__raw_readl(get_base_address(USER_BUTTON_GPIO_NUMBER,IN));
+	if(v&get_mask_bit(USER_BUTTON_GPIO_NUMBER)){
+		return 1;
+	}
+	return 0;
 }
-
 
 static unsigned char gpio_buf[MAX_LEN];
 static int proc_write( struct file *filp, const char *buf, unsigned long len, void *data )
@@ -53,7 +67,7 @@ static int proc_read( char *buf, char **start, off_t offset, int count, int *eof
 	*eof = 1;
 	return len;
 }
-
+xxxxxxx
 static int __init gpio_init( void )
 {
 	struct proc_dir_entry* entry;

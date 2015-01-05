@@ -7,11 +7,33 @@
 
 #define PROCNAME "driver/gpio"
 
+static long unsigned int GPIO_BASE[]={
+	GPIO1_BASE,GPIO2_BASE,GPIO3_BASE,GPIO4_BASE,GPIO5_BASE,GPIO6_BASE,
+};
+
 static long unsigned int * get_base_address(int gpio_number,int operation)
 {
 	long unsigned int p;
 	switch(operation){
-	p = GPIO_BASE[gpio_number>>5]+DATA_IN;
+	case IN:
+		p = GPIO_BASE[gpio_number>>5]+DATA_IN;
+		break;
+	case OUT:
+		p = GPIO_BASE[gpio_number>>5]+DATA_OUT;
+		break;
+	case SET:
+		p = GPIO_BASE[gpio_number>>5]+SET_DATA_OUT;
+		break;
+	case CLEAR:
+		p = GPIO_BASE[gpio_number>>5]+CLEAR_DATA_OUT;
+		break;
+	case OUT_ENABLE:
+		p = GPIO_BASE[gpio_number>>5]+OUTPUT_ENABLE;
+		break;
+	default:
+		p = GPIO_BASE[gpio_number>>5]+DATA_IN;
+		break;
+	}
 	return ioremap(p,SZ_8K);
 }
 
@@ -22,7 +44,15 @@ static int get_mask_bit(int gpio_number)
 
 static void set_led(int onoff)
 {
-	// control the led
+	long unsigned int mask = get_mask_bit(LED0_GPIO_NUMBER);
+	long unsigned int v;
+	v = __raw_readl(get_base_address(LED0_GPIO_NUMBER,OUT_ENABLE));
+	__raw_writel(v&(~mask), get_base_address(LED0_GPIO_NUMBER,OUT_ENABLE));
+	if(onoff==ON){
+		__raw_writel(mask, get_base_address(LED0_GPIO_NUMBER,SET));
+	}else{
+		__raw_writel(mask, get_base_address(LED0_GPIO_NUMBER,CLEAR));
+	}
 }
 
 static int user_button(void)

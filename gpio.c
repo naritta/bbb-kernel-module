@@ -7,9 +7,35 @@
 
 #define PROCNAME "driver/gpio"
 
+#define MAX_LEN 4
+#define GPIO0_BASE		(0x44E07000)
+#define GPIO1_BASE		(0x4804C000)
+#define GPIO2_BASE		(0x481AC000)
+#define GPIO3_BASE		(0x481AE000)
+
+#define OUTPUT_ENABLE 0x134
+#define DATA_IN 0x138
+#define DATA_OUT 0x13C
+#define SET_DATA_OUT 0x194
+#define CLEAR_DATA_OUT 0x190
+
+#define USER_BUTTON_GPIO_NUMBER 73
+#define LED0_GPIO_NUMBER 46
+#define LED1_GPIO_NUMBER 47
+
+#define ON (1)
+#define OFF (0)
+
+#define IN (0)
+#define OUT (1)
+#define CLEAR (2)
+#define SET (3)
+#define OUT_ENABLE (4)
+
 static long unsigned int GPIO_BASE[]={
-	GPIO1_BASE,GPIO2_BASE,GPIO3_BASE,GPIO4_BASE,GPIO5_BASE,GPIO6_BASE,
+	GPIO0_BASE,GPIO1_BASE,GPIO2_BASE,GPIO3_BASE
 };
+static unsigned char gpio_buf[MAX_LEN];
 
 static long unsigned int * get_base_address(int gpio_number,int operation)
 {
@@ -64,7 +90,6 @@ static int user_button(void)
 	return 0;
 }
 
-static unsigned char gpio_buf[MAX_LEN];
 static int proc_write( struct file *filp, const char *buf, unsigned long len, void *data )
 {
 	if( len >= MAX_LEN ){
@@ -97,7 +122,7 @@ static int proc_read( char *buf, char **start, off_t offset, int count, int *eof
 	*eof = 1;
 	return len;
 }
-xxxxxxx
+
 static int __init gpio_init( void )
 {
 	struct proc_dir_entry* entry;
